@@ -20,7 +20,7 @@ class HabitViewSet(viewsets.ModelViewSet):
 
 class PublicHabitListView(generics.ListAPIView):
     serializer_class = HabitSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Habit.objects.filter(is_public=True).order_by("-id")
