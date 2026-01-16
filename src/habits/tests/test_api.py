@@ -42,6 +42,7 @@ def test_public_habits_list_shows_only_public():
     user = User.objects.create_user(
         email="p@example.com", password="pass12345"
     )
+    client.force_authenticate(user=user)
 
     Habit.objects.create(
         user=user, place="home", time="08:00", action="public",
