@@ -12,10 +12,10 @@ def test_user_sees_only_own_habits_in_list():
     client = APIClient()
 
     u1 = User.objects.create_user(
-        email="a@example.com", username="a", password="pass12345"
+        email="a@example.com", password="pass12345"
     )
     u2 = User.objects.create_user(
-        email="b@example.com", username="b", password="pass12345"
+        email="b@example.com", password="pass12345"
     )
 
     Habit.objects.create(
@@ -40,7 +40,7 @@ def test_public_habits_list_shows_only_public():
     client = APIClient()
 
     user = User.objects.create_user(
-        email="p@example.com", username="p", password="pass12345"
+        email="p@example.com", password="pass12345"
     )
 
     Habit.objects.create(
@@ -64,10 +64,10 @@ def test_user_cannot_update_foreign_habit():
     client = APIClient()
 
     u1 = User.objects.create_user(
-        email="o1@example.com", username="o1", password="pass12345"
+        email="o1@example.com", password="pass12345"
     )
     u2 = User.objects.create_user(
-        email="o2@example.com", username="o2", password="pass12345"
+        email="o2@example.com", password="pass12345"
     )
 
     habit = Habit.objects.create(
@@ -95,7 +95,7 @@ def test_user_cannot_update_foreign_habit():
 def test_create_habit_sets_user_automatically():
     client = APIClient()
     user = User.objects.create_user(
-        email="c@example.com", username="c", password="pass12345"
+        email="c@example.com", password="pass12345"
     )
     client.force_authenticate(user=user)
 
