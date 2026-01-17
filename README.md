@@ -1,94 +1,176 @@
-# Habit Tracker — Backend
+## Course Work — Habit Tracker (DRF + Celery + Telegram)
 
-Бэкенд-часть SPA-приложения для трекинга полезных привычек по мотивам книги
-«Атомные привычки» Джеймса Клира.
+### Backend для SPA-трекера привычек (по книге «Атомные привычки»).
+### Стек: Django + DRF, PostgreSQL, Redis, Celery (worker + beat), Nginx, Docker Compose.
 
-Проект реализован в рамках курсовой работы.
+### Сервисы
 
-## Стек технологий
+- web — Django/DRF приложение (Gunicorn)
+- db — PostgreSQL
+- redis — брокер для Celery
+- celery — Celery worker
+- celery-beat — Celery beat (планировщик)
+- nginx — reverse proxy + раздача статики
 
-- Python 3.13
-- Django
-- Django REST Framework
-- JWT (djangorestframework-simplejwt)
-- Celery
-- Redis
-- Telegram Bot API
-- PostgreSQL / SQLite (для разработки)
-- Poetry
-- Pytest
+### Требования
 
-## Функциональность
+- Docker + Docker Compose
+- (для локальной разработки без Docker) Poetry + Python 3.13
 
-- Регистрация и авторизация пользователей (JWT)
-- CRUD для привычек (доступ только к своим)
-- Публичный список привычек (только чтение)
-- Валидация бизнес-правил привычек
-- Пагинация (5 элементов на страницу)
-- Интеграция с Telegram для напоминаний
-- Отложенные задачи и периодические напоминания (Celery + Beat)
-- Документация API (Swagger)
-- Покрытие тестами ≥ 80%
-- Flake8 — 100% (кроме миграций)
+### Переменные окружения
 
-## Модель привычки
+- В репозитории есть шаблон: .env.example
+- Создай .env на его основе:
 
-Привычка описывается формулой:
+#### Скопировать:
 
-> Я буду [действие] в [время] в [место]
+- Linux/macOS:
 
-Поддерживаются:
-- полезные привычки
-- приятные привычки (как вознаграждение)
-- периодичность (1–7 дней)
-- публичность
+```cp .env.example .env```
 
-## Установка и запуск
 
-```bash
-git clone <repo_url>
-cd course_work
+- Windows PowerShell:
 
-poetry install
-poetry shell
+```Copy-Item .env.example .env```
+
+
+- Заполнить значения:
+```
+SECRET_KEY
+POSTGRES_PASSWORD
+TELEGRAM_BOT_TOKEN (если нужен Telegram)
 ```
 
-### Создайте .env файл:
-```
-DEBUG=1
-SECRET_KEY=dev-secret-key
-ALLOWED_HOSTS=127.0.0.1,localhost
-CELERY_BROKER_URL=redis://localhost:6379/0
-TELEGRAM_BOT_TOKEN=your_bot_token
-```
+## Запуск проекта локально (одной командой)
 
-### Примените миграции:
+- Создай .env
 
-```bash
-pytest --cov=src
-```
+- Запусти:
 
-### Запуск сервера:
+```docker compose up -d --build```
 
-```bash
-python src/manage.py runserver
-```
+#### Проверка:
 
-### Запуск Celery:
+API через Nginx: 
+```http://localhost/```
 
-```bash
-celery -A config.celery:app worker --pool=solo -l info --workdir=src
-celery -A config.celery:app beat -l info --workdir=src
-```
+Админка (если включена): 
+```http://localhost/admin/```
+
+#### Остановить:
+
+```docker compose down```
+
+#### Посмотреть логи:
+
+```docker compose logs -f --tail=200 web```
+
+- Миграции и суперпользователь (в Docker)
+
+- Применить миграции (обычно уже выполняется при старте web, но можно вручную):
+
+- docker compose exec web python src/manage.py migrate
+
+### Создать суперпользователя:
+
+```docker compose exec web python src/manage.py createsuperuser```
+
+### Telegram напоминания
+
+#### Логика напоминаний запускается Celery-задачами.
+
+### Проверь:
+
+- celery (worker) запущен
+
+- celery-beat (scheduler) запущен
+
+- Пользователь имеет корректный telegram_chat_id
+
+- TELEGRAM_BOT_TOKEN задан в .env
 
 ### Документация API
-
-Swagger UI:
-```bash
-http://127.0.0.1:8000/api/docs/
+```
+/api/docs/
 ```
 
-### Тесты
+### CI/CD (GitHub Actions)
+
+### Workflow расположен в .github/workflows/ci.yml и делает:
+
+- pytest
+
+- flake8
+
+- проверка сборки Docker образов (docker compose build)
+
+### Автодеплой
+```
+Деплой выполняется только после merge в develop, потому что job deploy запускается на событии push в ветку develop.
+```
+###### На pull_request деплой намеренно не выполняется (это безопаснее и соответствует распространённой практике).
+
+## Деплой на сервер (Docker Compose)
+#### Требования к серверу
+
+- Ubuntu/Debian (рекомендуется)
+- Установлены Docker и Docker Compose Plugin
+- Открыт порт 80 (HTTP)
+- SSH-доступ по ключу
+
+#### Структура на сервере
+
+- На сервере должен быть каталог, где лежит репозиторий, например:
+
+`````/home/ubuntu/course_work`````
+
+- И внутри него должен быть ```docker-compose.yml```
+
+### Как деплоит GitHub Actions
+
+#### Job deploy подключается по SSH и выполняет:
+
+```git fetch```
+```git reset --hard origin/develop```
+```docker compose up -d --build```
+```docker compose ps```
+
+### Secrets в GitHub
+
+###### В GitHub → Settings → Secrets and variables → Actions должны быть заданы:
+
+###### SSH_HOST — IP/домен сервера
+
+###### SSH_USER — пользователь (например ubuntu)
+
+###### SSH_PRIVATE_KEY — приватный ключ (OpenSSH формат)
+
+###### DEPLOY_PATH — путь до проекта на сервере (например /home/ubuntu/course_work)
+
+## Адрес развернутого сервера
+
+```
+http://158.160.216.113/api/docs/
+```
+
+### Команды для разработки без Docker
+
+#### Установка зависимостей:
 ```bash
-pytest --cov=src
+poetry install
+```
+
+#### Миграции:
+```bash
+poetry run python src/manage.py migrate
+```
+
+#### Тесты:
+```bash
+poetry run pytest
+```
+
+#### Линтер:
+```bash
+poetry run flake8
 ```

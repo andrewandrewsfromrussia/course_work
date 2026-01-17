@@ -9,7 +9,7 @@ User = get_user_model()
 @pytest.mark.django_db
 def test_habit_duration_must_be_120_or_less():
     User.objects.create_user(
-        email="u1@example.com", username="u1", password="pass12345"
+        email="u1@example.com", password="pass12345"
     )
 
     data = {
@@ -31,7 +31,7 @@ def test_habit_duration_must_be_120_or_less():
 @pytest.mark.django_db
 def test_habit_cannot_have_reward_and_related_habit_together():
     user = User.objects.create_user(
-        email="u2@example.com", username="u2", password="pass12345"
+        email="u2@example.com", password="pass12345"
     )
 
     pleasant = user.habits.create(
@@ -64,7 +64,7 @@ def test_habit_cannot_have_reward_and_related_habit_together():
 @pytest.mark.django_db
 def test_related_habit_must_be_pleasant():
     user = User.objects.create_user(
-        email="u3@example.com", username="u3", password="pass12345"
+        email="u3@example.com", password="pass12345"
     )
 
     not_pleasant = user.habits.create(
@@ -96,7 +96,7 @@ def test_related_habit_must_be_pleasant():
 @pytest.mark.django_db
 def test_pleasant_habit_cannot_have_reward_or_related():
     User.objects.create_user(
-        email="u4@example.com", username="u4", password="pass12345"
+        email="u4@example.com", password="pass12345"
     )
 
     data = {
@@ -118,7 +118,7 @@ def test_pleasant_habit_cannot_have_reward_or_related():
 @pytest.mark.django_db
 def test_periodicity_must_be_between_1_and_7():
     User.objects.create_user(
-        email="u5@example.com", username="u5", password="pass12345"
+        email="u5@example.com", password="pass12345"
     )
 
     data = {
