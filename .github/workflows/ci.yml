@@ -78,10 +78,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: test-and-build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'develop'
 
     steps:
-      - name: Deploy over SSH
+      - name: Deploy PR branch over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -89,9 +89,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
-            git fetch --all
-            git reset --hard origin/develop
+            cd "${{ secrets.DEPLOY_PATH }}"
+
+            # Подключаем origin по HTTPS с токеном (чтобы fetch работал без ключей)
+            git remote set-url origin "https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git"
+
+            # Забираем именно PR ветку и переключаемся на неё
+            git fetch origin "${{ github.head_ref }}":"pr-${{ github.event.pull_request.number }}"
+            git checkout "pr-${{ github.event.pull_request.number }}"
+            git reset --hard "pr-${{ github.event.pull_request.number }}"
+
             docker compose pull || true
             docker compose up -d --build
             docker compose ps
