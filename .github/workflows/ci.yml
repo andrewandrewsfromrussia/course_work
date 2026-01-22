@@ -91,11 +91,11 @@ jobs:
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
 
-            git remote set-url origin "https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git"
+            git remote set-url origin "https://github.com/${{ github.repository }}.git"
 
-            git fetch origin "${{ github.head_ref }}":"pr-${{ github.event.pull_request.number }}"
-            git checkout "pr-${{ github.event.pull_request.number }}"
-            git reset --hard "pr-${{ github.event.pull_request.number }}"
+            git fetch --prune origin "${{ github.head_ref }}"
+            git checkout -B deploy "origin/${{ github.head_ref }}"
+            git reset --hard "origin/${{ github.head_ref }}"
 
             docker-compose pull || true
             docker-compose up -d --build
