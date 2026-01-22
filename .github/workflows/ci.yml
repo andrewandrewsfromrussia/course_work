@@ -97,6 +97,6 @@ jobs:
             git checkout "pr-${{ github.event.pull_request.number }}"
             git reset --hard "pr-${{ github.event.pull_request.number }}"
 
-            docker compose pull || true
-            docker compose up -d --build
-            docker compose ps
+            docker-compose pull || true
+            docker-compose up -d --build
+            docker-compose ps
