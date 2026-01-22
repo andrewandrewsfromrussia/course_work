@@ -135,7 +135,6 @@ API через Nginx:
 ```docker compose up -d --build```
 ```docker compose ps```
 
-
 ### Secrets в GitHub
 
 ###### В GitHub → Settings → Secrets and variables → Actions должны быть заданы:
