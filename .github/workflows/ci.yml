@@ -91,10 +91,8 @@ jobs:
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
 
-            # Подключаем origin по HTTPS с токеном (чтобы fetch работал без ключей)
             git remote set-url origin "https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git"
 
-            # Забираем именно PR ветку и переключаемся на неё
             git fetch origin "${{ github.head_ref }}":"pr-${{ github.event.pull_request.number }}"
             git checkout "pr-${{ github.event.pull_request.number }}"
             git reset --hard "pr-${{ github.event.pull_request.number }}"
